@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	
+	<!-- redis数据源 -->
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxIdle" value="${redis.maxIdle}" />
+		<property name="maxTotal" value="${redis.maxActive}" />
+		<property name="maxWaitMillis" value="${redis.maxWait}" />
+		<property name="testOnBorrow" value="${redis.testOnBorrow}" />
+	</bean>
+
+	<!-- 定义集群连接池 -->
+	<bean id="shardedJedisPool" class="redis.clients.jedis.ShardedJedisPool">
+		<constructor-arg index="0" ref="poolConfig" />
+		<constructor-arg index="1">
+			<array>
+				<!-- 配置分片式集群信息 -->
+				<bean class="redis.clients.jedis.JedisShardInfo">
+					<!-- 访问ip,type属性设置参数类型 -->
+					<constructor-arg index="0" value="${redis.host}" />
+					<!-- 端口号 -->
+					<constructor-arg index="1" value="${redis.port}" />
+				</bean>
+				<!-- <bean class="redis.clients.jedis.JedisShardInfo"> -->
+				<!-- <constructor-arg index="0" value="${redis.host2}"/> -->
+				<!-- <constructor-arg index="1" value="${redis.port2}"/> -->
+				<!-- </bean> -->
+			</array>
+		</constructor-arg>
+	</bean>
+
+	<!-- Spring-redis连接池管理工厂 -->
+	<bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+		<property name="hostName" value="${redis.host}"/>
+		<property name="port" value="${redis.port}"/>
+		<property name="password" value="${redis.pass}"/>
+		<property name="poolConfig" ref="poolConfig"/>
+	</bean>
+	
+	<!--<bean id="redisCacheTransfer" class="com.lxg.redis.RedisCacheTransfer">
+		<property name="jedisConnectionFactory" ref="jedisConnectionFactory"/>
+	</bean>-->
+</beans>
